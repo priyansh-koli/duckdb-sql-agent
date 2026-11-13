@@ -1,0 +1,294 @@
+# Eval cases for the text-to-SQL agent.
+#
+# Each answerable case has gold SQL. The grader runs the gold SQL and the agent's final
+# SQL against the same database and compares the results, so a rebuilt database does not
+# make the expected answers stale. Gold SQL follows the conventions in the system prompt
+# (market_sales for prices and counts, AVG for "average", MEDIAN for "typical"/"median",
+# relative dates from dataset_info.last_sale_date = 2026-09-18 in the current build).
+#
+# Fields:
+#   id, question, tags (first tag = category)
+#   answerable: false   -> the agent must decline (no SQL needed)
+#   gold: SQL whose result the agent's final query must reproduce
+#   ordered: true       -> row order matters (rankings, time series)
+#   suppress: true      -> fewer than 5 sales: the agent must not give the statistic
+#   must_mention: words that must appear in the answer or caveats (case-insensitive)
+
+cases:
+  # --- simple lookups -------------------------------------------------------------
+  - id: count_2025
+    question: How many homes were sold in Ireland in 2025?
+    tags: [lookup]
+    gold: SELECT count(*) FROM market_sales WHERE sale_year = 2025
+
+  - id: dublin_median_2025
+    question: What was the median price of a home in Dublin in 2025?
+    tags: [lookup]
+    gold: SELECT median(price_eur) FROM market_sales WHERE county = 'Dublin' AND sale_year = 2025
+
+  - id: cork_secondhand_avg_2024
+    question: What was the average price of a second-hand home in Cork in 2024?
+    tags: [lookup]
+    gold: >-
+      SELECT avg(price_eur) FROM market_sales
+      WHERE county = 'Cork' AND sale_year = 2024 AND NOT is_new
+
+  - id: kildare_new_2023
+    question: How many new homes were sold in Kildare in 2023?
+    tags: [lookup]
+    gold: SELECT count(*) FROM market_sales WHERE county = 'Kildare' AND sale_year = 2023 AND is_new
+
+  - id: leitrim_2012
+    question: How many sales were there in Leitrim in 2012?
+    tags: [lookup]
+    gold: SELECT count(*) FROM market_sales WHERE county = 'Leitrim' AND sale_year = 2012
+
+  - id: monaghan_median_2025
+    question: Typical price paid for a home in Monaghan in 2025?
+    tags: [lookup]
+    gold: SELECT median(price_eur) FROM market_sales WHERE county = 'Monaghan' AND sale_year = 2025
+
+  - id: limerick_secondhand_median_2025
+    question: Median price of a second-hand home in Limerick in 2025?
+    tags: [lookup]
+    gold: >-
+      SELECT median(price_eur) FROM market_sales
+      WHERE county = 'Limerick' AND sale_year = 2025 AND NOT is_new
+
+  - id: secondhand_median_2025
+    question: What was the median price of a second-hand home in Ireland in 2025?
+    tags: [lookup]
+    gold: SELECT median(price_eur) FROM market_sales WHERE sale_year = 2025 AND NOT is_new
+
+  - id: under_100k_2025
+    question: How many homes sold for less than €100,000 in 2025?
+    tags: [lookup]
+    gold: SELECT count(*) FROM market_sales WHERE sale_year = 2025 AND price_eur < 100000
+
+  # --- filters and thresholds ------------------------------------------------------
+  - id: dublin_over_1m_2025
+    question: How many homes in Dublin sold for more than €1 million in 2025?
+    tags: [filter]
+    gold: >-
+      SELECT count(*) FROM market_sales
+      WHERE county = 'Dublin' AND sale_year = 2025 AND price_eur > 1000000
+
+  - id: wicklow_over_500k_2025
+    question: How many sales in Wicklow were above €500,000 in 2025?
+    tags: [filter]
+    gold: >-
+      SELECT count(*) FROM market_sales
+      WHERE county = 'Wicklow' AND sale_year = 2025 AND price_eur > 500000
+
+  - id: new_share_2025
+    question: What percentage of homes sold in 2025 were new?
+    tags: [filter]
+    gold: >-
+      SELECT 100.0 * count(*) FILTER (is_new) / count(*) FROM market_sales WHERE sale_year = 2025
+
+  - id: large_new_avg_2015
+    question: What was the average price of new homes of 125 square metres or more sold in 2015?
+    tags: [filter]
+    gold: >-
+      SELECT avg(price_eur) FROM market_sales
+      WHERE sale_year = 2015 AND is_new AND size_band = '125 sq m or more'
+
+  - id: counties_median_over_400k
+    question: How many counties had a median price above €400,000 in 2025?
+    tags: [filter]
+    gold: >-
+      SELECT count(*) FROM (SELECT county FROM market_sales WHERE sale_year = 2025
+      GROUP BY county HAVING median(price_eur) > 400000)
+
+  # --- rankings --------------------------------------------------------------------
+  - id: top_county_sales_2025
+    question: Which county had the most home sales in 2025?
+    tags: [ranking]
+    gold: >-
+      SELECT county FROM market_sales WHERE sale_year = 2025
+      GROUP BY county ORDER BY count(*) DESC LIMIT 1
+
+  - id: top5_median_2025
+    question: List the five counties with the highest median price in 2025, highest first.
+    tags: [ranking]
+    ordered: true
+    gold: >-
+      SELECT county FROM market_sales WHERE sale_year = 2025
+      GROUP BY county ORDER BY median(price_eur) DESC LIMIT 5
+
+  - id: cheapest_county_2025
+    question: Which county had the lowest median price in 2025?
+    tags: [ranking]
+    gold: >-
+      SELECT county FROM market_sales WHERE sale_year = 2025
+      GROUP BY county ORDER BY median(price_eur) ASC LIMIT 1
+
+  - id: busiest_year
+    question: Which year had the most home sales?
+    tags: [ranking]
+    gold: >-
+      SELECT sale_year FROM market_sales GROUP BY sale_year ORDER BY count(*) DESC LIMIT 1
+
+  # --- trends ----------------------------------------------------------------------
+  - id: dublin_median_trend
+    question: Show the median price in Dublin for each year from 2019 to 2025.
+    tags: [trend]
+    ordered: true
+    gold: >-
+      SELECT sale_year, median(price_eur) FROM market_sales
+      WHERE county = 'Dublin' AND sale_year BETWEEN 2019 AND 2025
+      GROUP BY sale_year ORDER BY sale_year
+
+  - id: national_median_change_2015_2025
+    question: By what percentage did the national median price change between 2015 and 2025?
+    tags: [trend]
+    gold: >-
+      SELECT 100.0 * (median(price_eur) FILTER (sale_year = 2025)
+                    / median(price_eur) FILTER (sale_year = 2015) - 1)
+      FROM market_sales
+
+  - id: national_median_yoy
+    question: How much did the national median price change from 2024 to 2025, in percent?
+    tags: [trend]
+    gold: >-
+      SELECT 100.0 * (median(price_eur) FILTER (sale_year = 2025)
+                    / median(price_eur) FILTER (sale_year = 2024) - 1)
+      FROM market_sales
+
+  - id: kerry_avg_2020_2025
+    question: Compare the average price in Kerry in 2020 and 2025.
+    tags: [trend]
+    ordered: true
+    gold: >-
+      SELECT sale_year, avg(price_eur) FROM market_sales
+      WHERE county = 'Kerry' AND sale_year IN (2020, 2025)
+      GROUP BY sale_year ORDER BY sale_year
+
+  # --- places ----------------------------------------------------------------------
+  - id: d06_median_2025
+    question: What was the median price in Dublin 6 (D06) in 2025?
+    tags: [place]
+    gold: >-
+      SELECT median(price_eur) FROM market_sales
+      WHERE eircode_routing_key = 'D06' AND sale_year = 2025
+
+  - id: h91_median_2024
+    question: Median price in the H91 Eircode area in 2024?
+    tags: [place]
+    gold: >-
+      SELECT median(price_eur) FROM market_sales
+      WHERE eircode_routing_key = 'H91' AND sale_year = 2024
+
+  - id: t12_new_median_2024
+    question: Median price of a new home in the T12 (Cork) area in 2024?
+    tags: [place]
+    gold: >-
+      SELECT median(price_eur) FROM market_sales
+      WHERE eircode_routing_key = 'T12' AND sale_year = 2024 AND is_new
+
+  - id: salthill_median_2024
+    question: What was the median price of homes sold in Salthill in 2024?
+    tags: [place]
+    must_mention: [address]
+    gold: >-
+      SELECT median(price_eur) FROM market_sales
+      WHERE address ILIKE '%salthill%' AND sale_year = 2024
+
+  # --- conventions and data rules ---------------------------------------------------
+  - id: nfmp_2024
+    question: How many sales in 2024 were filed as not full market price?
+    tags: [convention]
+    gold: SELECT count(*) FROM sales WHERE sale_year = 2024 AND not_full_market_price
+
+  - id: all_filings_2024
+    question: >-
+      Including sales that were not at full market price and bulk sales, how many sales
+      were filed in 2024?
+    tags: [convention]
+    gold: SELECT count(*) FROM sales WHERE sale_year = 2024
+
+  - id: dublin_new_median_inc_vat_2024
+    question: What was the median price of a new home in Dublin in 2024, including VAT?
+    tags: [convention]
+    must_mention: [estimate]
+    gold: >-
+      SELECT median(price_eur) * 1.135 FROM market_sales
+      WHERE county = 'Dublin' AND sale_year = 2024 AND is_new
+
+  - id: last_year_dublin
+    question: How many homes were sold in Dublin last year?
+    tags: [convention]
+    gold: SELECT count(*) FROM market_sales WHERE county = 'Dublin' AND sale_year = 2025
+
+  - id: dublin_aug_2026
+    question: What was the median price in Dublin in August 2026?
+    tags: [convention]
+    must_mention: [provisional]
+    gold: >-
+      SELECT median(price_eur) FROM market_sales
+      WHERE county = 'Dublin' AND sale_year = 2026 AND sale_month = 8
+
+  - id: count_2026_so_far
+    question: How many homes have been sold in 2026 so far?
+    tags: [convention]
+    must_mention: [provisional]
+    gold: SELECT count(*) FROM market_sales WHERE sale_year = 2026
+
+  - id: longford_new_2025
+    question: What was the median price of a new home in Longford in 2025?
+    tags: [convention]
+    suppress: true
+    gold: >-
+      SELECT median(price_eur) FROM market_sales
+      WHERE county = 'Longford' AND sale_year = 2025 AND is_new
+
+  # --- should decline ----------------------------------------------------------------
+  - id: no_bedrooms
+    question: How many bedrooms do homes sold in D06 usually have?
+    tags: [decline]
+    answerable: false
+
+  - id: no_buyer
+    question: Who bought 5 Glenview House, Salthill, Galway?
+    tags: [decline]
+    answerable: false
+
+  - id: no_forecast
+    question: What will the median price in Dublin be in 2027?
+    tags: [decline]
+    answerable: false
+
+  - id: no_rent
+    question: What is the average monthly rent in Galway?
+    tags: [decline]
+    answerable: false
+
+  - id: no_price_per_sqm
+    question: What was the average price per square metre in Cork in 2024?
+    tags: [decline]
+    answerable: false
+
+  - id: no_property_type
+    question: How many apartments were sold in Dublin in 2025?
+    tags: [decline]
+    answerable: false
+
+  - id: no_valuation
+    question: What is my house at 12 Main Street, Naas worth today?
+    tags: [decline]
+    answerable: false
+
+  - id: no_mortgage
+    question: What was the average mortgage size in Ireland in 2025?
+    tags: [decline]
+    answerable: false
+
+  - id: no_london
+    question: What was the median house price in London in 2025?
+    tags: [decline]
+    answerable: false
+
+  - id: no_agents
+    question: Which estate agent sold the most homes in 2025?
+    tags: [decline]
+    answerable: false

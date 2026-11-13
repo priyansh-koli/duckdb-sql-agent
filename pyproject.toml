@@ -1,0 +1,51 @@
+[build-system]
+requires = ["setuptools>=69"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ppr-ask"
+version = "0.1.0"
+description = "Ask questions about Irish house prices in plain English: a text-to-SQL agent over the Property Price Register, with an eval."
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.12"
+dependencies = [
+    "anthropic>=2.8,<3",
+    "duckdb>=2.0,<3",
+    "fastapi>=0.160",
+    "uvicorn>=0.30",
+    "typer>=0.29",
+    "python-dotenv>=1.0",
+    "pyyaml>=6.0",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8", "ruff>=0.8", "mypy>=1.13", "types-PyYAML"]
+
+[project.scripts]
+ppr-ask = "ppr_ask.cli:app"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+ppr_ask = ["static/*.html"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP", "SIM", "RUF"]
+
+[tool.mypy]
+strict = true
+packages = ["ppr_ask"]
+mypy_path = "src"
+
+[[tool.mypy.overrides]]
+module = ["duckdb.*"]
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

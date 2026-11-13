@@ -1,0 +1,33 @@
+{
+  "flow": "text_to_sql",
+  "metrics": [
+    {
+      "id": "correct",
+      "label": "Correct",
+      "kind": "binary"
+    },
+    {
+      "id": "classified",
+      "label": "Answerable?",
+      "kind": "binary"
+    },
+    {
+      "id": "mentions",
+      "label": "Caveats",
+      "kind": "binary"
+    }
+  ],
+  "perf_fields": [
+    "latency_s",
+    "tool_calls",
+    "usage"
+  ],
+  "harness_paths": [
+    "evals/run_eval.py",
+    "evals/grade.py",
+    "evals/cases.yaml",
+    "src/ppr_ask/agent.py",
+    "src/ppr_ask/prompt.py",
+    "src/ppr_ask/sqlguard.py"
+  ]
+}
