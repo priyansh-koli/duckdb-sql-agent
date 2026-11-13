@@ -20,7 +20,7 @@ from datetime import date, datetime
 from decimal import Decimal
 from typing import Any
 
-from ppr_ask.sqlguard import ReadOnlyDB
+from duckdb_sql_agent.sqlguard import ReadOnlyDB
 
 Value = float | str | None
 

@@ -12,8 +12,8 @@ import time
 from dataclasses import asdict, dataclass, field
 from typing import Any, Protocol, cast
 
-from ppr_ask.prompt import ANSWER_SCHEMA, RUN_SQL_TOOL, SYSTEM_PROMPT
-from ppr_ask.sqlguard import ReadOnlyDB
+from duckdb_sql_agent.prompt import ANSWER_SCHEMA, RUN_SQL_TOOL, SYSTEM_PROMPT
+from duckdb_sql_agent.sqlguard import ReadOnlyDB
 
 DEFAULT_MODEL = "claude-opus-5-5"
 DEFAULT_EFFORT = "medium"
@@ -78,8 +78,8 @@ class Agent:
     ):
         self.db = db
         self.api = messages_api
-        self.model = model or os.environ.get("PPR_ASK_MODEL", DEFAULT_MODEL)
-        self.effort = effort or os.environ.get("PPR_ASK_EFFORT", DEFAULT_EFFORT)
+        self.model = model or os.environ.get("SQL_AGENT_MODEL", DEFAULT_MODEL)
+        self.effort = effort or os.environ.get("SQL_AGENT_EFFORT", DEFAULT_EFFORT)
         self.max_tool_calls = max_tool_calls
 
     def _request(self, messages: list[dict[str, Any]]) -> Any:

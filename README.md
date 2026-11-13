@@ -1,4 +1,4 @@
-# ppr-ask
+# duckdb-sql-agent
 
 Ask questions about Irish house prices in plain English. An agent built on Claude writes
 SQL against the **Residential Property Price Register** (807,724 sales since 2010), runs it
@@ -6,7 +6,7 @@ through a locked-down read-only database, and answers with the figure, the SQL b
 and the caveats that matter.
 
 ```text
-$ ppr-ask ask "What was the median price of a new home in Dublin in 2024, including VAT?"
+$ sql-agent ask "What was the median price of a new home in Dublin in 2024, including VAT?"
 
 In 2024 the median filed price of a new home in Dublin was €440,529, based on 3,071
 market sales. That price leaves out VAT. Adding VAT at 13.5% gives an estimated median
@@ -67,7 +67,7 @@ question ──▶ Claude (system prompt: schema, data rules, answer format)
             JSON answer: answerable, answer, sql, caveats
 ```
 
-- **Data.** `ppr-ask build-db` downloads the official `PPR-ALL.zip` and loads it into DuckDB
+- **Data.** `sql-agent build-db` downloads the official `PPR-ALL.zip` and loads it into DuckDB
   in about 3 seconds. The file is Windows-1252, not UTF-8 (the euro sign and Irish fadas
   break otherwise). Every raw field is kept in `sales_raw`; `sales` holds typed values.
   Repeat filings are flagged as possible duplicates, and **portfolio sales** (one total
@@ -106,12 +106,12 @@ question ──▶ Claude (system prompt: schema, data rules, answer format)
 ## Run it
 
 ```bash
-git clone https://github.com/priyansh-koli/ppr-ask && cd ppr-ask
+git clone https://github.com/priyansh-koli/duckdb-sql-agent && cd duckdb-sql-agent
 python3.12 -m venv .venv && .venv/bin/pip install -e '.[dev]'
 cp .env.example .env          # then add your ANTHROPIC_API_KEY
-.venv/bin/ppr-ask build-db    # downloads the PPR (~19 MB) and builds data/ppr.duckdb
-.venv/bin/ppr-ask ask "Which county had the lowest median price in 2025?"
-.venv/bin/ppr-ask serve       # the web page at http://127.0.0.1:8000
+.venv/bin/sql-agent build-db    # downloads the PPR (~19 MB) and builds data/ppr.duckdb
+.venv/bin/sql-agent ask "Which county had the lowest median price in 2025?"
+.venv/bin/sql-agent serve       # the web page at http://127.0.0.1:8000
 ```
 
 Each question costs about 2–3 cents of Claude usage on your own key. The tests need no key:
@@ -128,11 +128,11 @@ To rerun the eval (about $1): run `evals/run_eval.py --approve-harness` once, th
 
 | Path | What |
 |---|---|
-| `src/ppr_ask/build.py` | download, cp1252 parsing, duplicate and bulk flags, DuckDB build |
-| `src/ppr_ask/sqlguard.py` | the read-only, locked-down query runner |
-| `src/ppr_ask/prompt.py` | system prompt, tool definition, answer schema |
-| `src/ppr_ask/agent.py` | the tool loop |
-| `src/ppr_ask/cli.py`, `web.py` | command line and web page |
+| `src/duckdb_sql_agent/build.py` | download, cp1252 parsing, duplicate and bulk flags, DuckDB build |
+| `src/duckdb_sql_agent/sqlguard.py` | the read-only, locked-down query runner |
+| `src/duckdb_sql_agent/prompt.py` | system prompt, tool definition, answer schema |
+| `src/duckdb_sql_agent/agent.py` | the tool loop |
+| `src/duckdb_sql_agent/cli.py`, `web.py` | command line and web page |
 | `evals/` | cases, grader, runner |
 | `tests/` | pytest, with a 17-row sample of the real register (Irish-language and mis-encoded descriptions, a duplicate pair, two bulk groups) |
 

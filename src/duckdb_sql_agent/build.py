@@ -62,7 +62,9 @@ class HeaderMismatchError(ValueError):
 
 def download(dest: Path, url: str = PPR_URL) -> Path:
     dest.parent.mkdir(parents=True, exist_ok=True)
-    req = urllib.request.Request(url, headers={"User-Agent": "ppr-ask (open-source PPR tool)"})
+    req = urllib.request.Request(
+        url, headers={"User-Agent": "duckdb-sql-agent (open-source PPR tool)"}
+    )
     with urllib.request.urlopen(req, timeout=120) as resp, dest.open("wb") as out:
         out.write(resp.read())
     return dest

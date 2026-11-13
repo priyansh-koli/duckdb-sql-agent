@@ -26,8 +26,8 @@
     "evals/run_eval.py",
     "evals/grade.py",
     "evals/cases.yaml",
-    "src/ppr_ask/agent.py",
-    "src/ppr_ask/prompt.py",
-    "src/ppr_ask/sqlguard.py"
+    "src/duckdb_sql_agent/agent.py",
+    "src/duckdb_sql_agent/prompt.py",
+    "src/duckdb_sql_agent/sqlguard.py"
   ]
 }

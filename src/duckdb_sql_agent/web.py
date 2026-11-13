@@ -9,11 +9,11 @@ from fastapi import FastAPI, HTTPException
 from fastapi.responses import HTMLResponse
 from pydantic import BaseModel, Field
 
-from ppr_ask.agent import Agent, default_agent
-from ppr_ask.cli import db_path
-from ppr_ask.sqlguard import ReadOnlyDB
+from duckdb_sql_agent.agent import Agent, default_agent
+from duckdb_sql_agent.cli import db_path
+from duckdb_sql_agent.sqlguard import ReadOnlyDB
 
-app = FastAPI(title="ppr-ask")
+app = FastAPI(title="duckdb-sql-agent")
 
 
 class AskIn(BaseModel):
@@ -27,7 +27,7 @@ def get_agent() -> Agent:
 
 @app.get("/", response_class=HTMLResponse)
 def index() -> str:
-    return files("ppr_ask").joinpath("static/index.html").read_text(encoding="utf-8")
+    return files("duckdb_sql_agent").joinpath("static/index.html").read_text(encoding="utf-8")
 
 
 @app.post("/api/ask")

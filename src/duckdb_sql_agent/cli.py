@@ -15,7 +15,7 @@ app = typer.Typer(add_completion=False, help="Ask questions about Irish house pr
 
 
 def db_path() -> Path:
-    return Path(os.environ.get("PPR_ASK_DB", "data/ppr.duckdb"))
+    return Path(os.environ.get("SQL_AGENT_DB", "data/ppr.duckdb"))
 
 
 @app.command("build-db")
@@ -25,7 +25,7 @@ def build_db(
     ] = None,
 ) -> None:
     """Download the PPR (or use a local copy) and build the DuckDB database."""
-    from ppr_ask.build import build, download
+    from duckdb_sql_agent.build import build, download
 
     if source is None:
         source = download(Path("data/PPR-ALL.zip"))
@@ -40,8 +40,8 @@ def ask(
     show_sql: Annotated[bool, typer.Option(help="Print the SQL used")] = True,
 ) -> None:
     """Ask one question."""
-    from ppr_ask.agent import default_agent
-    from ppr_ask.sqlguard import ReadOnlyDB
+    from duckdb_sql_agent.agent import default_agent
+    from duckdb_sql_agent.sqlguard import ReadOnlyDB
 
     db = ReadOnlyDB(db_path())
     result = default_agent(db).ask(question)
@@ -63,7 +63,7 @@ def serve(host: str = "127.0.0.1", port: int = 8000) -> None:
     """Serve the question page at http://127.0.0.1:8000."""
     import uvicorn
 
-    uvicorn.run("ppr_ask.web:app", host=host, port=port)
+    uvicorn.run("duckdb_sql_agent.web:app", host=host, port=port)
 
 
 if __name__ == "__main__":

@@ -2,8 +2,8 @@ from pathlib import Path
 
 import pytest
 
-from ppr_ask.build import build
-from ppr_ask.sqlguard import ReadOnlyDB
+from duckdb_sql_agent.build import build
+from duckdb_sql_agent.sqlguard import ReadOnlyDB
 
 FIXTURE = Path(__file__).parent / "fixtures" / "ppr_sample.csv"
 

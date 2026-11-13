@@ -7,7 +7,7 @@ sys.path.insert(0, str(Path(__file__).parents[1] / "evals"))
 
 from grade import grade, mentions_number, numbers_in, results_match
 
-from ppr_ask.sqlguard import ReadOnlyDB
+from duckdb_sql_agent.sqlguard import ReadOnlyDB
 
 
 @pytest.mark.parametrize(

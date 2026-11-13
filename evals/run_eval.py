@@ -37,17 +37,17 @@ sys.path.insert(0, str(ROOT / "evals"))
 
 from grade import grade  # noqa: E402
 
-from ppr_ask.agent import DEFAULT_EFFORT, DEFAULT_MODEL, Agent, default_agent  # noqa: E402
-from ppr_ask.sqlguard import ReadOnlyDB  # noqa: E402
+from duckdb_sql_agent.agent import DEFAULT_EFFORT, DEFAULT_MODEL, Agent, default_agent  # noqa: E402
+from duckdb_sql_agent.sqlguard import ReadOnlyDB  # noqa: E402
 
 FLOW = ROOT / ".claude" / "hillclimb" / "text_to_sql"
 HARNESS_PATHS = [
     "evals/run_eval.py",
     "evals/grade.py",
     "evals/cases.yaml",
-    "src/ppr_ask/agent.py",
-    "src/ppr_ask/prompt.py",
-    "src/ppr_ask/sqlguard.py",
+    "src/duckdb_sql_agent/agent.py",
+    "src/duckdb_sql_agent/prompt.py",
+    "src/duckdb_sql_agent/sqlguard.py",
 ]
 STATE = {
     "flow": "text_to_sql",

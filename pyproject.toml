@@ -3,7 +3,7 @@ requires = ["setuptools>=69"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "ppr-ask"
+name = "duckdb-sql-agent"
 version = "0.1.0"
 description = "Ask questions about Irish house prices in plain English: a text-to-SQL agent over the Property Price Register, with an eval."
 readme = "README.md"
@@ -23,13 +23,13 @@ dependencies = [
 dev = ["pytest>=8", "ruff>=0.8", "mypy>=1.13", "types-PyYAML"]
 
 [project.scripts]
-ppr-ask = "ppr_ask.cli:app"
+sql-agent = "duckdb_sql_agent.cli:app"
 
 [tool.setuptools.packages.find]
 where = ["src"]
 
 [tool.setuptools.package-data]
-ppr_ask = ["static/*.html"]
+duckdb_sql_agent = ["static/*.html"]
 
 [tool.ruff]
 line-length = 100
@@ -40,7 +40,7 @@ select = ["E", "F", "I", "B", "UP", "SIM", "RUF"]
 
 [tool.mypy]
 strict = true
-packages = ["ppr_ask"]
+packages = ["duckdb_sql_agent"]
 mypy_path = "src"
 
 [[tool.mypy.overrides]]

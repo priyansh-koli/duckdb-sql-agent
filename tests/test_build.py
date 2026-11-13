@@ -4,7 +4,7 @@ from pathlib import Path
 import duckdb
 import pytest
 
-from ppr_ask.build import HeaderMismatchError, build
+from duckdb_sql_agent.build import HeaderMismatchError, build
 
 FIXTURE = Path(__file__).parent / "fixtures" / "ppr_sample.csv"
 

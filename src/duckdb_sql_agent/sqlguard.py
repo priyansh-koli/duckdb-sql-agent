@@ -89,7 +89,7 @@ class ReadOnlyDB:
 
     def __init__(self, path: Path, *, timeout_s: float = TIMEOUT_S, max_rows: int = MAX_ROWS):
         if not path.exists():
-            raise FileNotFoundError(f"{path} not found; run `ppr-ask build-db` first")
+            raise FileNotFoundError(f"{path} not found; run `sql-agent build-db` first")
         self.timeout_s = timeout_s
         self.max_rows = max_rows
         self.con = duckdb.connect(

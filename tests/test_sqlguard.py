@@ -2,7 +2,7 @@ from pathlib import Path
 
 import pytest
 
-from ppr_ask.sqlguard import QueryRejected, ReadOnlyDB, check_sql
+from duckdb_sql_agent.sqlguard import QueryRejected, ReadOnlyDB, check_sql
 
 
 @pytest.mark.parametrize(

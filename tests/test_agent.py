@@ -4,9 +4,9 @@ import json
 from types import SimpleNamespace as NS
 from typing import Any
 
-from ppr_ask.agent import Agent
-from ppr_ask.prompt import ANSWER_SCHEMA, RUN_SQL_TOOL
-from ppr_ask.sqlguard import ReadOnlyDB
+from duckdb_sql_agent.agent import Agent
+from duckdb_sql_agent.prompt import ANSWER_SCHEMA, RUN_SQL_TOOL
+from duckdb_sql_agent.sqlguard import ReadOnlyDB
 
 
 def usage(i: int = 100, o: int = 20, cr: int = 0, cw: int = 0) -> NS:
